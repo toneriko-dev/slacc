@@ -1,6 +1,6 @@
 # slacc
 
-署名と zip の読み取りを、ネイティブコード(Rust)で行うモジュールです。[misskey-dev/slacc](https://github.com/misskey-dev/slacc) のコミット `eaad29863dcb07038bb196ea4f7d97b60cf89452`(0.2.0)から分かれたフォークで、MIT です。[Misskey (Toneriko)](https://github.com/haru0416-dev/misskey) のために保守していて、npm には公開しません。
+署名と zip の読み取りを、ネイティブコード(Rust)で行うモジュールです。[misskey-dev/slacc](https://github.com/misskey-dev/slacc) のコミット `eaad29863dcb07038bb196ea4f7d97b60cf89452`(0.2.0)から分かれたフォークで、MIT です。[Misskey (Toneriko)](https://github.com/toneriko-dev/toneriko) のために保守していて、npm には公開しません。
 
 ## フォークした理由
 
