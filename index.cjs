@@ -30,7 +30,7 @@ const found = [join(__dirname, `index.${suffix}.node`), join(__dirname, `slacc.$
 );
 
 if (found == null) {
-	throw new Error(`slacc: native binding not found for ${suffix}. Run \`bun run --filter slacc build\`.`);
+	throw new Error(`slacc: native binding not found for ${suffix}. Build it with \`bun run build\` in the slacc repository.`);
 }
 
 module.exports = require(found);
