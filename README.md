@@ -1,49 +1,60 @@
-# slacc
+<div align="center">
+  <a href="https://github.com/toneriko-dev"><img src=".github/assets/toneriko-icon.svg" width="72" height="72" alt="Toneriko"></a>
 
-署名と zip の読み取りを、ネイティブコード(Rust)で行うモジュールです。[misskey-dev/slacc](https://github.com/misskey-dev/slacc) のコミット `eaad29863dcb07038bb196ea4f7d97b60cf89452`(0.2.0)から分かれたフォークで、MIT です。[Misskey (Toneriko)](https://github.com/toneriko-dev/toneriko) のために保守していて、npm には公開しません。
+  <h1>slacc</h1>
 
-## フォークした理由
+  <p>署名と zip の読み取りを Rust で行う、Misskey (Toneriko) のネイティブモジュール</p>
 
-ネイティブモジュールを npm 経由で受け取ると、13 プラットフォーム分のバイナリの配布に縛られます。`Cannot find native binding` のような、環境に依存する起動の失敗も、自分では追えません。使う環境は限られているので、ソースを持ち、必要なプラットフォームだけをビルドします。
+  <p>
+    <a href="https://github.com/toneriko-dev/slacc/actions/workflows/test.yml"><img src="https://img.shields.io/github/actions/workflow/status/toneriko-dev/slacc/test.yml?branch=main&style=flat-square&label=test" alt="test"></a>
+    <a href="https://github.com/toneriko-dev/slacc/tags"><img src="https://img.shields.io/github/v/tag/toneriko-dev/slacc?style=flat-square&color=26739f&label=release" alt="release"></a>
+    <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-434d54?style=flat-square" alt="MIT"></a>
+  </p>
 
-## upstream との違い
+  <p>
+    <a href="#提供するもの">提供するもの</a>
+    ·
+    <a href="#ビルド">ビルド</a>
+    ·
+    <a href="#misskey-から使う">Misskey から使う</a>
+  </p>
 
-- `AhoCorasick` を削除しました。使っていないため、`aho-corasick` crate ごと外しています。
-- 13 プラットフォーム対応のローダーを、隣に置かれたビルド成果物だけを読む `index.cjs` に置き換えました。
-- ESM から読めるように `index.mjs` を足しました。ネイティブモジュールは CommonJS でしか読めないため、`createRequire` で包んでいます。
+  <sub><a href="https://github.com/toneriko-dev">Toneriko</a> の部品</sub>
+</div>
 
-## ビルド
+<br>
 
-Rust のツールチェーンが必要です。
-
-```sh
-bun install
-bun run build        # release ビルド
-bun run build:debug  # debug ビルド
-```
-
-成果物の `*.node` と `target/` は main では追跡しません。
+[misskey-dev/slacc](https://github.com/misskey-dev/slacc) 0.2.0 から分かれた、署名と zip の読み取りを Rust で行うモジュールです。使う環境だけのバイナリを自分でビルドするために、ソースごと持っています。
 
 ## 提供するもの
 
 | 名前 | 内容 |
 | --- | --- |
-| `init(numThreads)` | 署名と検証を並列に処理するスレッドプールを初期化する。プロセスで 1 回だけ呼ぶ。2 回目はエラーになる |
-| `Signer` | HTTP 署名と LD 署名を作る。RSA(2048〜8192 ビット)、Ed25519、ML-DSA-44 に対応する |
+| `init(numThreads)` | 署名と検証のスレッドプールを作る。プロセスで 1 回だけ呼ぶ |
+| `Signer` | HTTP 署名と LD 署名を作る。RSA(2048〜8192 ビット)、Ed25519、ML-DSA-44 |
 | `Verifier` | HTTP 署名を検証する |
-| `ZipArchiveReader` | 絵文字のインポートで使う zip から、名前が一致する通常のファイルを読む。暗号化されたエントリ、ディレクトリ、symlink、上限のバイト数を超えるエントリは、エラーにする |
+| `ZipArchiveReader` | 絵文字のインポートの zip から、名前の一致するファイルを読む |
 
-Misskey の backend が、ActivityPub の署名の生成と検証(`core/activitypub/http-signature.ts`)と、絵文字の zip のインポート(`queue/handlers/emojis.ts`)で使います。スレッドプールの初期化は `boot/common.ts` で行います。
+upstream から `AhoCorasick` を外し、13 環境向けのローダーを、隣のバイナリだけを読む `index.cjs` と ESM 用の `index.mjs` に置き換えています。
+
+## ビルド
+
+Rust のツールチェーンが要ります。
+
+```sh
+bun install
+bun run build        # release
+bun run build:debug  # debug
+```
 
 ## Misskey から使う
 
-Misskey は、このリポジトリのタグを git の依存として `"slacc": "github:toneriko-dev/slacc#v<版>"` の形で参照します。タグのコミットには、GitHub Actions でビルドした次の 2 つのバイナリが入っています。依存として入れるときにビルドが走らないので、利用側に Rust は要りません。
+Misskey は release のタグを git の依存として読み込みます。
 
-| ファイル | 対象 |
-| --- | --- |
-| `index.linux-x64-gnu.node` | x86_64 の Linux (glibc) |
-| `index.linux-arm64-gnu.node` | arm64 の Linux (glibc)。Raspberry Pi など |
+```json
+"slacc": "github:toneriko-dev/slacc#v<版>"
+```
 
-ほかの環境 (macOS、Windows、musl の Linux) では `slacc: native binding not found` で止まります。その環境で使うときは、このリポジトリを clone してビルドし、できた `*.node` を利用側の `node_modules/slacc` に置いてください。
+タグのコミットには、x86_64 と arm64 の Linux(glibc)向けのバイナリが入っています。ほかの環境では `slacc: native binding not found` で止まるので、clone してビルドした `*.node` を `node_modules/slacc` に置いてください。
 
-タグは release workflow で作ります。`package.json` と `Cargo.toml` の `version` を上げて main に push してから、workflow を手動で実行します。workflow は 2 つの環境でビルドして読み込めることを確かめたあと、バイナリを足したコミットに `v<版>` のタグを付けて push します。同じ版のタグがあれば止まります。
+版を出すときは、`package.json` と `Cargo.toml` の `version` を上げて main に push し、release workflow を手動で実行します。
